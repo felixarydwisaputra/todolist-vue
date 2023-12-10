@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Todo List VueJs</title>
+
+    <!-- CSS Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+    <!-- icons bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+
+    <style>
+        .bordered{
+            border: 1px solid black;
+        }
+
+        .done{
+            text-decoration: line-through;
+            color: grey;
+        }
+        #error{
+            box-shadow: 1px 1px 5px 5px red;
+        }
+    </style>
+  </head>
+  <body>
+
+    <div id="app">
+
+        <section id="todo">
+            <div class="container my-5 pt-5 text-center">
+                <h1 class="mt-5 mb-3">To Do List dengan VueJs</h1>
+                <h5 class="mb-5 fst-italic">{{setDate}}</h5>
+                <div class="row justify-content-center my-5 pt-3">
+                    <div class="col-9">
+                        <div class="row text-start">
+                            <div class="col-2">
+                                <label for="start" class="form-label">Time Start</label>
+                                <input type="text" name="start" class="form-control" placeholder="time start" v-model="start" maxlength="5" required>
+                                <div class="form-text text-start">hh:mm (00:00-24:00)</div>
+                            </div>
+                            <div class="col-2">
+                                <label for="end" class="form-label">Time End</label>
+                                <input type="text" name="end" class="form-control" id="exampleInputEmail1" placeholder="time end" v-model="end" maxlength="5" required>
+                                <div class="form-text text-start">hh:mm (00:00-24:00)</div>
+                            </div>
+                            <div class="col-6">
+                                <label for="activity" class="form-label">Your Activity</label>
+                                <input type="activity" name="activity" class="form-control" id="exampleInputEmail1" placeholder="your activity" v-model="activity" required>
+                            </div>
+                            <div class="col-2" style="margin-top: 2rem;">
+                                <button type="submit" class="btn btn-primary w-100" @click="addTask">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-7" v-if="todoList.length > 0">
+                        <div class="row align-items-center py-3 border-bottom border-2 border-dark border-opacity-50" v-for="(item,index) in todoList">
+                            <div class="col-8 text-start">
+                                <h6 :class="{done: item.isDone}">{{item.start}} - {{item.end}} : {{item.activity}} </h6> <span class="pt-1 pb-2 px-4 text-white bg-success rounded-3" v-show="item.isDone">selesai</span>
+                            </div>
+                            <div class="col-4">
+                                <button class="bg-success" title="task done" style="border: none; border-radius: 5px; box-shadow: 1px 1px 3px rgba(0, 0, 0, .5);" @click="doneTask(index)">
+                                    <i class="bi bi-check-lg text-white" style="font-size: 1.4rem;"></i>
+                                </button>
+                                <button class="bg-danger ms-2" title="delete task" style="border: none; border-radius: 5px; box-shadow: 1px 1px 3px rgba(0, 0, 0, .5);" @click="deleteTask(index)">
+                                    <i class="bi bi-trash text-white" style="font-size: 1.4rem;"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-7" v-else>
+                        <h3>No Activity Today</h3>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+
+    <script type="module">
+        import {createApp, ref} from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+
+        createApp({
+             data(){
+                return {
+                    todoList : [],
+                    start: '00:00',
+                    end : '00:00',
+                    activity : '',
+                    isDone : false,
+                    hari : new Date().getDay(),
+                    tanggal : new Date().getDate(),
+                    bulan : new Date().getMonth(),
+                    tahun : new Date().getFullYear(),
+                    startError : false
+                }
+            },
+            methods:{
+                addTask(){
+
+                    if(this.start.length != 0 && this.end.length != 0 && this.activity.length != 0){
+                        let dataBaru = {
+                            start : this.start,
+                            end : this.end,
+                            activity : this.activity,
+                            isDone : this.isDone
+                        }
+                        this.todoList.unshift(dataBaru)
+    
+                        this.start = '00:00',
+                        this.end = '00:00',
+                        this.activity = ''
+                        
+                        localStorage.setItem('task', JSON.stringify(this.todoList))
+                    } else{
+                        return alert("Input tidak boleh kosong!")
+                    }
+                },
+                deleteTask(value){
+                    this.todoList.splice(value,1)
+                    localStorage.setItem('task', JSON.stringify(this.todoList))
+                },
+                doneTask(value){
+                    this.todoList[value].isDone = !this.todoList[value].isDone
+                    localStorage.setItem('task', JSON.stringify(this.todoList))
+                },
+            },
+            created(){
+                this.todoList = JSON.parse(localStorage.getItem('task')) || []
+            },
+            computed:{
+                setDate(){
+                    let hari = ''
+                    let bulan = ''
+
+                    switch (this.hari) {
+                        case 0:
+                            hari = "Minggu"
+                            break;
+                        case 1:
+                            hari = "Senin"
+                            break;
+                        case 2:
+                            hari = "Selasa"
+                            break;
+                        case 3:
+                            hari = "Rabu"
+                            break;
+                        case 4:
+                            hari = "Kamis"
+                            break;
+                        case 5:
+                            hari = "Jum'at"
+                            break;
+                        case 6:
+                            hari = "Sabtu"
+                            break;
+                    }
+
+                    switch (this.bulan) {
+                        case 0:
+                            bulan = "Januari"
+                            break;
+                        case 1:
+                            bulan = "Februari"
+                            break;
+                        case 2:
+                            bulan = "Maret"
+                            break;
+                        case 3:
+                            bulan = "April"
+                            break;
+                        case 4:
+                            bulan = "Mei"
+                            break;
+                        case 5:
+                            bulan = "Juni"
+                            break;
+                        case 6:
+                            bulan = "Juli"
+                            break;
+                        case 7:
+                            bulan = "Agustus"
+                            break;
+                        case 8:
+                            bulan = "September"
+                            break;
+                        case 9:
+                            bulan = "Oktober"
+                            break;
+                        case 10:
+                            bulan = "November"
+                            break;
+                        case 11:
+                            bulan = "Desember"
+                            break;
+                    }
+
+                    return hari + ', ' + this.tanggal + ' ' + bulan + ' ' + this.tahun
+                }
+            }
+        }).mount('#app')
+    </script>
+  </body>
+</html>
